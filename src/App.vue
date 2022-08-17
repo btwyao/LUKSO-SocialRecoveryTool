@@ -1,5 +1,16 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted } from "vue";
+import { useServices } from "@/services";
 import Navbar from "./components/nav/Navbar.vue";
+const { initServices, destroyServices } = useServices();
+
+onMounted(async () => {
+  await initServices();
+});
+
+onUnmounted(async () => {
+  await destroyServices();
+});
 </script>
 
 <template>

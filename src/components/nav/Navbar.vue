@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import Connect from "./Connect.vue";
+import { ref } from "vue";
+import { toggle } from "@/utils/dropdown";
+
+const burger = ref();
+const menu = ref();
 </script>
 
 <template>
@@ -11,6 +16,23 @@ import Connect from "./Connect.vue";
     <div class="navbar-brand">
       <a class="navbar-item" href="https://lukso.network">
         <img src="@/assets/lukso.png" height="28" />
+      </a>
+
+      <a
+        ref="burger"
+        role="button"
+        class="navbar-burger"
+        aria-label="menu"
+        aria-expanded="false"
+        data-target="navbar"
+        @click="
+          toggle(burger);
+          toggle(menu);
+        "
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
       </a>
     </div>
 

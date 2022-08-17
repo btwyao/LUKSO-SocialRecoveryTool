@@ -1,6 +1,24 @@
 <script setup lang="ts">
-import { useProfileStore } from "../../stores/profile";
+import { ref } from "vue";
+import { useProfileStore } from "@/stores/profile";
+import { sliceAddress } from "@/utils/sliceAddress";
+import { useServices } from "@/services";
+import { close, toggle } from "@/utils/dropdown";
+import { WALLET_CONNECT_VERSION as walletConnectVersion } from "@/helpers/config";
 const profileStore = useProfileStore();
+const dropdown = ref();
+const hasExtension = !!window.ethereum;
+const { loginService } = useServices();
+
+const connectExtension = async () => {
+  close(dropdown.value);
+  await loginService.connectExtension();
+};
+
+const connectWalletConnect = async () => {
+  close(dropdown.value);
+  await loginService.connectWalletConnect();
+};
 </script>
 
 <template>
@@ -13,6 +31,68 @@ const profileStore = useProfileStore();
         <span>{{ profileStore.balance }} LYX</span>
       </button>
     </p>
+    <p class="control">
+      <button
+        class="button is-static is-small is-rounded address"
+        data-testid="address"
+      >
+        <div
+          :class="`logo ${
+            profileStore.channel === 'browserExtension'
+              ? 'browser-extension'
+              : 'wallet-connect'
+          }`"
+        />
+        <span>{{ sliceAddress(profileStore.address) }}</span>
+      </button>
+    </p>
+    <p class="control">
+      <button
+        class="button is-small is-rounded"
+        data-testid="disconnect"
+        @click="loginService.disconnect"
+      >
+        <span class="icon is-small">
+          <i class="fas fa-sign-out-alt"></i>
+        </span>
+      </button>
+    </p>
+  </div>
+
+  <div v-else ref="dropdown" class="dropdown is-right">
+    <div class="dropdown-trigger">
+      <button
+        ref="dropdown"
+        class="button is-primary is-small is-rounded has-text-weight-bold"
+        aria-haspopup="true"
+        aria-controls="dropdown-menu"
+        data-testid="connect"
+        @click="toggle(dropdown)"
+      >
+        <span>Connect</span>
+      </button>
+    </div>
+    <div id="dropdown-menu" class="dropdown-menu" role="menu">
+      <div class="dropdown-content">
+        <button
+          class="dropdown-item has-text-weight-bold button is-text"
+          data-testid="connect-extension"
+          :disabled="hasExtension ? undefined : true"
+          @click="connectExtension"
+        >
+          <div class="logo browser-extension" />
+          Browser Extension
+        </button>
+        <button
+          class="dropdown-item has-text-weight-bold button is-text"
+          data-testid="connect-wc"
+          @click="connectWalletConnect"
+        >
+          <div class="logo wallet-connect" />
+          Wallet Connect {{ walletConnectVersion }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 

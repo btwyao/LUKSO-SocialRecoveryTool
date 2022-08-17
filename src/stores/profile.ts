@@ -5,6 +5,9 @@ export const useProfileStore = defineStore({
   state: () => ({
     isConnected: false,
     balance: 0,
+    channel: undefined,
+    address: "",
+    chainId: 0,
   }),
   getters: {},
   actions: {},
