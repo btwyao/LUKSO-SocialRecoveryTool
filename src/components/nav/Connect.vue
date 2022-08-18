@@ -49,6 +49,15 @@ const connectWalletConnect = async () => {
     <p class="control">
       <button
         class="button is-small is-rounded"
+        data-testid="srt-manage"
+        @click="loginService.disconnect"
+      >
+        <span>SRT</span>
+      </button>
+    </p>
+    <p class="control">
+      <button
+        class="button is-small is-rounded"
         data-testid="disconnect"
         @click="loginService.disconnect"
       >
