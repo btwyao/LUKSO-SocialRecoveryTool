@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/Home.vue";
 import LoginView from "@/views/Login.vue";
+import SocialRecoveryView from "@/views/SocialRecovery.vue";
 import { useProfileStore } from "@/stores/profile";
 
 const router = createRouter({
@@ -15,6 +16,11 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: LoginView,
+    },
+    {
+      path: "/social-recovery",
+      name: "social-recovery",
+      component: SocialRecoveryView,
     },
   ],
 });
@@ -33,7 +39,7 @@ router.beforeEach((to, from, next) => {
       next();
     }
   } else {
-    if (to.path === "/login") {
+    if (to.path === "/" || to.path === "/login") {
       next();
     } else {
       next({ path: "/login", query: { redirect: to.fullPath } });

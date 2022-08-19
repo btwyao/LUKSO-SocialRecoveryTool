@@ -8,6 +8,7 @@ export const useProfileStore = defineStore({
     channel: undefined,
     address: "",
     chainId: 0,
+    socialRecoveryAddress: "",
   }),
   getters: {},
   actions: {},

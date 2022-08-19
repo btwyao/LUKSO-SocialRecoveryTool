@@ -47,13 +47,13 @@ const connectWalletConnect = async () => {
       </button>
     </p>
     <p class="control">
-      <button
+      <router-link
         class="button is-small is-rounded"
-        data-testid="srt-manage"
-        @click="loginService.disconnect"
+        data-testid="social-recovery"
+        to="/social-recovery"
       >
         <span>SRT</span>
-      </button>
+      </router-link>
     </p>
     <p class="control">
       <button
