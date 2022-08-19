@@ -1,13 +1,21 @@
 import LoginService from "./LoginService";
 
 let loginService: LoginService;
+let isInit: boolean;
+let isDestroy: boolean;
 
 async function initServices(): Promise<void> {
-  await loginService.init();
+  if (!isInit) {
+    await loginService.init();
+  }
+  isInit = true;
 }
 
 async function destroyServices(): Promise<void> {
-  await loginService.destroy();
+  if (!isDestroy) {
+    await loginService.destroy();
+  }
+  isDestroy = true;
 }
 
 export function useServices(): {
