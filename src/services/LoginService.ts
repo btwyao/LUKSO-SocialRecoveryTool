@@ -119,7 +119,7 @@ export default class LoginService {
     this.profileStore.$patch((state) => {
       state.address = address;
       state.isConnected = true;
-      (state.channel as any) = channel;
+      state.channel = channel;
       state.chainId = chainId;
       state.balance = balance;
     });
@@ -163,7 +163,7 @@ export default class LoginService {
   }
 
   public async disconnect(): Promise<void> {
-    if ((this.profileStore.channel as unknown as Channel) == "walletConnect") {
+    if (this.profileStore.channel === "walletConnect") {
       await this.provider.disconnect();
     } else {
       localStorage.removeItem(UP_CONNECTED_ADDRESS);

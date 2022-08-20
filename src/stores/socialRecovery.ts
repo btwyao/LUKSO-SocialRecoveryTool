@@ -1,16 +1,16 @@
 import { defineStore } from "pinia";
 
-interface SocialRecoveryProfile {
+interface SocialRecoveryStore {
   address: string; //social recovery contract address
 }
 
-const defalutProfile: SocialRecoveryProfile = {
+const defalutSocialRecovery: SocialRecoveryStore = {
   address: "",
 };
 
 export const useSocialRecovery = defineStore({
   id: "socialRecovery",
-  state: () => defalutProfile,
+  state: () => defalutSocialRecovery,
   getters: {},
   actions: {},
 });
