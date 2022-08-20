@@ -23,7 +23,9 @@ const hasExtension = computed(() => {
         </router-link>
       </div>
       <div class="field">
-        <router-link class="button is-primary is-rounded mb-3" to="/"
+        <router-link
+          class="button is-primary is-rounded mb-3"
+          to="/grant-access"
           >Grant Access To Profile
         </router-link>
       </div>

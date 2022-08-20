@@ -145,7 +145,7 @@ const recoverOwnership = async () => {
                       data-testid="toRecoverOwnership"
                       @click="toRecoverOwnership(process.processId)"
                     >
-                      Recover
+                      To recover
                     </button>
                   </td>
                 </tr>

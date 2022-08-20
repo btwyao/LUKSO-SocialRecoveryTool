@@ -3,6 +3,7 @@ import HomeView from "@/views/Home.vue";
 import LoginView from "@/views/Login.vue";
 import SocialRecoveryView from "@/views/SocialRecovery.vue";
 import AccessBackView from "@/views/AccessBack.vue";
+import GrantAccessView from "@/views/GrantAccess.vue";
 import { useProfileStore } from "@/stores/profile";
 
 const router = createRouter({
@@ -27,6 +28,11 @@ const router = createRouter({
       path: "/access-back",
       name: "access-back",
       component: AccessBackView,
+    },
+    {
+      path: "/grant-access",
+      name: "grant-access",
+      component: GrantAccessView,
     },
   ],
 });
