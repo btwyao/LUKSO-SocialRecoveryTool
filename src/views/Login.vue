@@ -27,6 +27,9 @@ const connectWalletConnect = async () => {
 <template>
   <div class="tile is-4 is-parent">
     <div class="tile is-child box">
+      <div v-if="route.query.redirect" class="field">
+        <label class="label">You need login firstly</label>
+      </div>
       <div class="field">
         <button
           class="button is-primary is-rounded mb-3"

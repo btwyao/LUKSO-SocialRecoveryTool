@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Tabs, Tab } from "vue3-tabs-component";
-import { useProfileStore } from "@/stores/profile";
+import { useSocialRecovery } from "@/stores/socialRecovery";
 import { ref } from "vue";
-const profileStore = useProfileStore();
+const srStore = useSocialRecovery();
 const guardians = ref("");
 const guardiansThreshold = ref(0);
 const plainSecret = ref("");
@@ -27,7 +27,7 @@ const fixSRA = async () => {
 };
 </script>
 <template>
-  <div v-if="profileStore.socialRecoveryAddress" data-testid="editSR">
+  <div v-if="srStore.address" data-testid="editSR">
     <tabs
       wrapper-class="panel"
       nav-class="panel-tabs is-large"
@@ -57,9 +57,7 @@ const fixSRA = async () => {
                 :class="`button is-primary is-rounded mb-3 ${
                   isPending ? 'is-loading' : ''
                 }`"
-                :disabled="
-                  profileStore.socialRecoveryAddress ? undefined : true
-                "
+                :disabled="srStore.address ? undefined : true"
                 data-testid="editGuardians"
                 @click="editGuardians"
               >
@@ -89,9 +87,7 @@ const fixSRA = async () => {
                 :class="`button is-primary is-rounded mb-3 ${
                   isPending ? 'is-loading' : ''
                 }`"
-                :disabled="
-                  profileStore.socialRecoveryAddress ? undefined : true
-                "
+                :disabled="srStore.address ? undefined : true"
                 data-testid="editPassword"
                 @click="editPassword"
               >
@@ -113,9 +109,7 @@ const fixSRA = async () => {
                 :class="`button is-primary is-rounded mb-3 ${
                   isPending ? 'is-loading' : ''
                 }`"
-                :disabled="
-                  profileStore.socialRecoveryAddress ? undefined : true
-                "
+                :disabled="srStore.address ? undefined : true"
                 data-testid="fixSRA"
                 @click="fixSRA"
               >
@@ -158,7 +152,7 @@ const fixSRA = async () => {
             :class="`button is-primary is-rounded mb-3 ${
               isPending ? 'is-loading' : ''
             }`"
-            :disabled="profileStore.socialRecoveryAddress ? undefined : true"
+            :disabled="!srStore.address ? undefined : true"
             data-testid="createSRA"
             @click="createSRA"
           >

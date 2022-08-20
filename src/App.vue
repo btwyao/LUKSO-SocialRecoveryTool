@@ -2,7 +2,22 @@
 import { onMounted, onUnmounted } from "vue";
 import { useServices } from "@/services";
 import Navbar from "./components/nav/Navbar.vue";
+import { useProfileStore } from "@/stores/profile";
+import { useRoute, useRouter } from "vue-router";
 const { initServices, destroyServices } = useServices();
+const profileStore = useProfileStore();
+const router = useRouter();
+const route = useRoute();
+
+profileStore.$subscribe((mutation, state) => {
+  if (route.path === "/" || route.path === "/login") {
+    return;
+  }
+  if (!state.isConnected) {
+    console.log("disconnected");
+    router.push("/");
+  }
+});
 
 onMounted(async () => {
   await initServices();

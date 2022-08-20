@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/Home.vue";
 import LoginView from "@/views/Login.vue";
 import SocialRecoveryView from "@/views/SocialRecovery.vue";
+import AccessBackView from "@/views/AccessBack.vue";
 import { useProfileStore } from "@/stores/profile";
 
 const router = createRouter({
@@ -21,6 +22,11 @@ const router = createRouter({
       path: "/social-recovery",
       name: "social-recovery",
       component: SocialRecoveryView,
+    },
+    {
+      path: "/access-back",
+      name: "access-back",
+      component: AccessBackView,
     },
   ],
 });
