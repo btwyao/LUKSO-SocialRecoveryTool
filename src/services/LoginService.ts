@@ -101,6 +101,7 @@ export default class LoginService {
       console.log("Key address:", this.web3.eth.accounts.wallet[0].address);
     }
     let addressType: AddressType = "universalProfile";
+    // let addressType: AddressType = "otherContactAccount";
     const code = await this.web3.eth.getCode(address);
     if (code === "0x") {
       addressType = "externallyOwnedAccounts";

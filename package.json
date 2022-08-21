@@ -16,7 +16,7 @@
   "dependencies": {
     "@erc725/erc725.js": "0.14.2",
     "@lukso/lsp-factory.js": "^2.3.2",
-    "@lukso/lsp-smart-contracts": "0.6.1",
+    "@lukso/lsp-smart-contracts": "file:lib/lsp-smart-contracts",
     "@lukso/universalprofile-smart-contracts": "0.4.1",
     "@types/node": "^16.7.2",
     "@walletconnect/client": "1.7.1",

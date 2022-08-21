@@ -61,7 +61,7 @@ const recoverOwnership = async () => {
   </div>
 
   <div
-    v-if="step === 2 && accessBackStore.upAddress.length > 0"
+    v-else-if="step === 2 && accessBackStore.upAddress.length > 0"
     data-testid="step2"
   >
     <div class="tile is-ancestor">
@@ -157,7 +157,10 @@ const recoverOwnership = async () => {
     </div>
   </div>
 
-  <div v-if="step === 3 && recoverProcessId.length > 0" data-testid="step3">
+  <div
+    v-else-if="step === 3 && recoverProcessId.length > 0"
+    data-testid="step3"
+  >
     <div class="tile is-ancestor">
       <div class="tile is-child box">
         <div class="field">

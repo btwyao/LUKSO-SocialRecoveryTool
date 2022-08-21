@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { Tabs, Tab } from "vue3-tabs-component";
+import { useProfileStore } from "@/stores/profile";
 import { useSocialRecovery } from "@/stores/socialRecovery";
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useServices } from "@/services";
+const profileStore = useProfileStore();
 const srStore = useSocialRecovery();
 const guardians = ref("");
 const guardiansThreshold = ref(0);
@@ -9,9 +12,18 @@ const plainSecret = ref("");
 const oldPlainSecret = ref("");
 const isPending = ref(false);
 const isSRAbnormal = ref(false);
+const { socialRecoveryService } = useServices();
+
+const hasSocialRecovery = computed(() => {
+  return profileStore.addressType === "universalProfile";
+});
 
 const createSRA = async () => {
-  //todo
+  await socialRecoveryService.createSocialRecoveryAccount(
+    guardians.value.split(";"),
+    guardiansThreshold.value,
+    plainSecret.value
+  );
 };
 
 const editGuardians = async () => {
@@ -27,7 +39,20 @@ const fixSRA = async () => {
 };
 </script>
 <template>
-  <div v-if="srStore.address" data-testid="editSR">
+  <div v-if="!hasSocialRecovery" data-testid="editSR">
+    <div class="tile is-ancestor">
+      <div class="tile is-child box">
+        <div class="field">
+          <label class="label"
+            >Social recovery need universal profile account, please login with
+            universal profile account firstly.</label
+          >
+        </div>
+      </div>
+    </div>
+    >
+  </div>
+  <div v-else-if="srStore.address" data-testid="editSR">
     <tabs
       wrapper-class="panel"
       nav-class="panel-tabs is-large"
