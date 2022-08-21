@@ -2,7 +2,7 @@ import { useProfileStore } from "@/stores/profile";
 import Web3 from "web3";
 import { Contract } from "web3-eth-contract";
 import { provider as Provider } from "web3-core";
-import { Channel } from "@/types";
+import { Channel, AddressType } from "@/types";
 import UniversalProfile from "@lukso/universalprofile-smart-contracts/artifacts/UniversalProfile.json";
 import KeyManager from "@lukso/universalprofile-smart-contracts/artifacts/LSP6KeyManager.json";
 import {
@@ -97,25 +97,40 @@ export default class LoginService {
     address: string,
     channel: Channel
   ): Promise<void> {
-    const chainId = await this.web3.eth.getChainId();
-    this.erc725Account = new this.web3.eth.Contract(
-      UniversalProfile.abi as any,
-      address,
-      {
-        gas: DEFAULT_GAS,
-        gasPrice: DEFAULT_GAS_PRICE,
+    if (this.web3.eth.accounts.wallet.length > 0) {
+      console.log("Key address:", this.web3.eth.accounts.wallet[0].address);
+    }
+    let addressType: AddressType = "universalProfile";
+    const code = await this.web3.eth.getCode(address);
+    if (code === "0x") {
+      addressType = "externallyOwnedAccounts";
+    } else {
+      try {
+        this.erc725Account = new this.web3.eth.Contract(
+          UniversalProfile.abi as any,
+          address,
+          {
+            gas: DEFAULT_GAS,
+            gasPrice: DEFAULT_GAS_PRICE,
+          }
+        );
+        const upOwner = await this.erc725Account.methods.owner().call();
+        this.keyManager = new this.web3.eth.Contract(
+          KeyManager.abi as any,
+          upOwner,
+          {
+            gas: DEFAULT_GAS,
+            gasPrice: DEFAULT_GAS_PRICE,
+          }
+        );
+      } catch (error) {
+        console.log("set erc725Account err:", error);
+        addressType = "otherContactAccount";
       }
-    );
-    const upOwner = await this.erc725Account.methods.owner().call();
-    this.keyManager = new this.web3.eth.Contract(
-      KeyManager.abi as any,
-      upOwner,
-      {
-        gas: DEFAULT_GAS,
-        gasPrice: DEFAULT_GAS_PRICE,
-      }
-    );
+    }
+    console.log("connect address type:", addressType);
 
+    const chainId = await this.web3.eth.getChainId();
     const wei = await this.web3.eth.getBalance(address);
     const balance = parseFloat(this.web3.utils.fromWei(wei));
     this.profileStore.$patch((state) => {
@@ -124,6 +139,7 @@ export default class LoginService {
       state.channel = channel;
       state.chainId = chainId;
       state.balance = balance;
+      state.addressType = addressType;
     });
   }
 
@@ -147,12 +163,15 @@ export default class LoginService {
     this.provider.on("accountsChanged", async (accounts: string[]) => {
       console.log("wallet connect account changed", accounts);
 
-      if (
-        accounts.length === 0 &&
-        this.profileStore.isConnected &&
-        this.profileStore.channel === "walletConnect"
-      ) {
-        return await this.disconnect();
+      if (accounts.length === 0) {
+        if (
+          this.profileStore.isConnected &&
+          this.profileStore.channel === "walletConnect"
+        ) {
+          return await this.disconnect();
+        } else {
+          return await this.provider?.disconnect();
+        }
       }
 
       const [address] = accounts;
@@ -203,7 +222,11 @@ export default class LoginService {
   }
 
   public async connectWalletConnect(): Promise<void> {
-    await this.setupProvider();
-    await this.enableProvider();
+    try {
+      await this.setupProvider();
+      await this.enableProvider();
+    } catch (error) {
+      console.log(error);
+    }
   }
 }

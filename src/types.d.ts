@@ -12,4 +12,7 @@ export type NotificationType = "primary" | "danger" | "info" | "warning";
 
 export type Channel = "browserExtension" | "walletConnect";
 
-export type AddressType = "universalProfile" | "others";
+export type AddressType =
+  | "externallyOwnedAccounts"
+  | "universalProfile"
+  | "otherContactAccount";
