@@ -1,5 +1,6 @@
 import { useProfileStore } from "@/stores/profile";
 import Web3 from "web3";
+import { Contract } from "web3-eth-contract";
 import { provider as Provider } from "web3-core";
 import { Channel } from "@/types";
 import UniversalProfile from "@lukso/universalprofile-smart-contracts/artifacts/UniversalProfile.json";
@@ -16,7 +17,9 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 export default class LoginService {
   protected profileStore;
   protected web3!: Web3;
-  protected provider!: WalletConnectProvider;
+  protected provider?: WalletConnectProvider;
+  protected erc725Account?: Contract;
+  protected keyManager?: Contract;
   handleAccountsChanged: (accounts: string[]) => void;
   handleChainChanged: (chainId: string) => void;
   handleConnect: () => void;
@@ -24,11 +27,11 @@ export default class LoginService {
 
   public constructor() {
     this.profileStore = useProfileStore();
-    this.handleAccountsChanged = (accounts: string[]) => {
-      console.log("Account changed", accounts);
+    this.handleAccountsChanged = async (accounts: string[]) => {
+      console.log("extension connect account changed", accounts);
 
       if (accounts.length === 0 && this.profileStore.isConnected) {
-        this.disconnect();
+        await this.disconnect();
       }
     };
 
@@ -52,7 +55,7 @@ export default class LoginService {
       localStorage.getItem(UP_CONNECTED_ADDRESS);
     await this.setupProvider();
 
-    if (this.provider.wc.connected) {
+    if (this.provider?.wc.connected) {
       await this.enableProvider();
     } else if (browserExtensionConnected) {
       await this.connectExtension();
@@ -78,7 +81,6 @@ export default class LoginService {
 
   protected setupWeb3(provider: Provider): void {
     this.web3 = new Web3(provider);
-    window.web3 = this.web3;
   }
 
   protected async accounts(): Promise<string> {
@@ -96,7 +98,7 @@ export default class LoginService {
     channel: Channel
   ): Promise<void> {
     const chainId = await this.web3.eth.getChainId();
-    window.erc725Account = new this.web3.eth.Contract(
+    this.erc725Account = new this.web3.eth.Contract(
       UniversalProfile.abi as any,
       address,
       {
@@ -104,8 +106,8 @@ export default class LoginService {
         gasPrice: DEFAULT_GAS_PRICE,
       }
     );
-    const upOwner = await window.erc725Account.methods.owner().call();
-    window.keyManager = new this.web3.eth.Contract(
+    const upOwner = await this.erc725Account.methods.owner().call();
+    this.keyManager = new this.web3.eth.Contract(
       KeyManager.abi as any,
       upOwner,
       {
@@ -113,9 +115,9 @@ export default class LoginService {
         gasPrice: DEFAULT_GAS_PRICE,
       }
     );
+
     const wei = await this.web3.eth.getBalance(address);
     const balance = parseFloat(this.web3.utils.fromWei(wei));
-
     this.profileStore.$patch((state) => {
       state.address = address;
       state.isConnected = true;
@@ -136,42 +138,48 @@ export default class LoginService {
 
     this.provider.on("connect", (error: any) => {
       if (error) {
-        throw error;
+        return console.log("wallet connect err:" + error);
       }
 
-      this.profileStore.isConnected = true;
-      this.setupWeb3(this.provider as unknown as Provider);
+      console.log("wallet connect");
     });
 
     this.provider.on("accountsChanged", async (accounts: string[]) => {
-      console.log("Account changed", accounts);
+      console.log("wallet connect account changed", accounts);
 
-      if (accounts.length === 0 && this.profileStore.isConnected) {
-        return await this.provider.disconnect();
+      if (
+        accounts.length === 0 &&
+        this.profileStore.isConnected &&
+        this.profileStore.channel === "walletConnect"
+      ) {
+        return await this.disconnect();
       }
 
       const [address] = accounts;
 
-      this.setConnected(address, "walletConnect");
+      await this.setConnected(address, "walletConnect");
     });
 
     this.setupWeb3(this.provider as unknown as Provider);
   }
 
   protected async enableProvider(): Promise<void> {
-    await this.provider.enable();
+    await this.provider?.enable();
   }
 
   public async disconnect(): Promise<void> {
+    console.log("disconnect");
     if (this.profileStore.channel === "walletConnect") {
-      await this.provider.disconnect();
+      await this.provider?.disconnect();
     } else {
       localStorage.removeItem(UP_CONNECTED_ADDRESS);
     }
 
-    window.erc725Account = undefined;
+    this.erc725Account = undefined;
+    this.keyManager = undefined;
     this.setupWeb3(null);
     this.profileStore.$reset();
+    console.log("disconnect finish", this.profileStore.isConnected);
   }
 
   public async connectExtension(): Promise<void> {

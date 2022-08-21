@@ -4,13 +4,11 @@ interface SocialRecoveryStore {
   address: string; //social recovery contract address
 }
 
-const defalutSocialRecovery: SocialRecoveryStore = {
-  address: "",
-};
-
 export const useSocialRecovery = defineStore({
   id: "socialRecovery",
-  state: () => defalutSocialRecovery,
+  state: (): SocialRecoveryStore => ({
+    address: "",
+  }),
   getters: {},
   actions: {},
 });

@@ -1,4 +1,4 @@
-import { Channel } from "./../types.d";
+import { Channel, AddressType } from "./../types.d";
 import { defineStore } from "pinia";
 
 interface ProfileStore {
@@ -8,20 +8,20 @@ interface ProfileStore {
   address: string;
   chainId: number;
   socialRecoveryAddress: string;
+  addressType: undefined | AddressType;
 }
-
-const defalutProfile: ProfileStore = {
-  isConnected: false,
-  balance: 0,
-  channel: undefined,
-  address: "",
-  chainId: 0,
-  socialRecoveryAddress: "",
-};
 
 export const useProfileStore = defineStore({
   id: "profile",
-  state: () => defalutProfile,
+  state: (): ProfileStore => ({
+    isConnected: false,
+    balance: 0,
+    channel: undefined,
+    address: "",
+    chainId: 0,
+    socialRecoveryAddress: "",
+    addressType: undefined,
+  }),
   getters: {},
   actions: {},
 });
