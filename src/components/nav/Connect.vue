@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useProfileStore } from "@/stores/profile";
+import { useEnv } from "@/stores/env";
 import { sliceAddress } from "@/utils/sliceAddress";
 import { useServices } from "@/services";
 import { close, toggle } from "@/utils/dropdown";
 import { WALLET_CONNECT_VERSION as walletConnectVersion } from "@/helpers/config";
 const profileStore = useProfileStore();
+const envStore = useEnv();
 const dropdown = ref();
-const hasExtension = !!window.ethereum;
 const { loginService } = useServices();
+
+const hasSocialRecovery = computed(() => {
+  return profileStore.addressType === "universalProfile";
+});
 
 const connectExtension = async () => {
   close(dropdown.value);
@@ -23,6 +28,15 @@ const connectWalletConnect = async () => {
 
 <template>
   <div v-if="profileStore.isConnected" class="field has-addons">
+    <p v-if="hasSocialRecovery" class="control">
+      <router-link
+        class="button is-small is-rounded"
+        data-testid="social-recovery"
+        to="/social-recovery"
+      >
+        <span>Social Recovery</span>
+      </router-link>
+    </p>
     <p class="control">
       <button
         class="button is-static is-small is-rounded"
@@ -45,15 +59,6 @@ const connectWalletConnect = async () => {
         />
         <span>{{ sliceAddress(profileStore.address) }}</span>
       </button>
-    </p>
-    <p class="control">
-      <router-link
-        class="button is-small is-rounded"
-        data-testid="social-recovery"
-        to="/social-recovery"
-      >
-        <span>SRT</span>
-      </router-link>
     </p>
     <p class="control">
       <button
@@ -86,7 +91,7 @@ const connectWalletConnect = async () => {
         <button
           class="dropdown-item has-text-weight-bold button is-text"
           data-testid="connect-extension"
-          :disabled="hasExtension ? undefined : true"
+          :disabled="envStore.hasExtension ? undefined : true"
           @click="connectExtension"
         >
           <div class="logo browser-extension" />

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useProfileStore } from "@/stores/profile";
+import { useEnv } from "@/stores/env";
 import { useServices } from "@/services";
 import { WALLET_CONNECT_VERSION as walletConnectVersion } from "@/helpers/config";
 import { useRoute, useRouter } from "vue-router";
 const profileStore = useProfileStore();
-const hasExtension = !!window.ethereum;
+const envStore = useEnv();
 const { loginService } = useServices();
 const router = useRouter();
 const route = useRoute();
@@ -33,7 +34,9 @@ const connectWalletConnect = async () => {
       <div class="field">
         <button
           class="button is-primary is-rounded mb-3"
-          :disabled="profileStore.address || !hasExtension ? true : undefined"
+          :disabled="
+            profileStore.address || !envStore.hasExtension ? true : undefined
+          "
           data-testid="connect-extension"
           @click="connectExtension"
         >

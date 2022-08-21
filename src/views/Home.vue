@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { useEnv } from "@/stores/env";
 import Notifications from "@/components/Notification.vue";
-const hasExtension = computed(() => {
-  return window.ethereum;
-});
+const envStore = useEnv();
 </script>
 <template>
   <Notifications
-    v-if="!hasExtension"
+    v-if="!envStore.hasExtension"
     :notification="{
       message: 'Please instal Universal Profile browser extension.',
       type: 'warning',
