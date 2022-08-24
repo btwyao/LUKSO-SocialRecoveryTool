@@ -19,11 +19,17 @@ const hasSocialRecovery = computed(() => {
 });
 
 const createSRA = async () => {
-  await socialRecoveryService.createSocialRecoveryAccount(
-    guardians.value.split(";"),
-    guardiansThreshold.value,
-    plainSecret.value
-  );
+  isPending.value = true;
+  try {
+    await socialRecoveryService.createSocialRecoveryAccount(
+      guardians.value.split(";"),
+      guardiansThreshold.value,
+      plainSecret.value
+    );
+  } catch (error) {
+    console.log("createSRA err:", error);
+  }
+  isPending.value = false;
 };
 
 const editGuardians = async () => {

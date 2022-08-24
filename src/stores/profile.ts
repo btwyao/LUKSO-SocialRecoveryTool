@@ -6,8 +6,8 @@ interface ProfileStore {
   balance: number;
   channel: undefined | Channel;
   address: string;
+  keyManagerAddress: string;
   chainId: number;
-  socialRecoveryAddress: string;
   addressType: undefined | AddressType;
 }
 
@@ -18,8 +18,8 @@ export const useProfileStore = defineStore({
     balance: 0,
     channel: undefined,
     address: "",
+    keyManagerAddress: "",
     chainId: 0,
-    socialRecoveryAddress: "",
     addressType: undefined,
   }),
   getters: {},

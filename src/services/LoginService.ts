@@ -3,8 +3,8 @@ import Web3 from "web3";
 import { Contract } from "web3-eth-contract";
 import { provider as Provider } from "web3-core";
 import { Channel, AddressType } from "@/types";
-import UniversalProfile from "@lukso/universalprofile-smart-contracts/artifacts/UniversalProfile.json";
-import KeyManager from "@lukso/universalprofile-smart-contracts/artifacts/LSP6KeyManager.json";
+import UniversalProfile from "@lukso/lsp-smart-contracts/artifacts/contracts/UniversalProfile.sol/UniversalProfile.json";
+import KeyManager from "@lukso/lsp-smart-contracts/artifacts/contracts/LSP6KeyManager/LSP6KeyManager.sol/LSP6KeyManager.json";
 import {
   DEFAULT_GAS,
   DEFAULT_GAS_PRICE,
@@ -15,11 +15,11 @@ import { EthereumProviderError } from "eth-rpc-errors";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
 export default class LoginService {
-  protected profileStore;
-  protected web3!: Web3;
+  public profileStore;
+  public web3!: Web3;
   protected provider?: WalletConnectProvider;
-  protected erc725Account?: Contract;
-  protected keyManager?: Contract;
+  public erc725Account?: Contract;
+  public keyManager?: Contract;
   handleAccountsChanged: (accounts: string[]) => void;
   handleChainChanged: (chainId: string) => void;
   handleConnect: () => void;
@@ -97,10 +97,8 @@ export default class LoginService {
     address: string,
     channel: Channel
   ): Promise<void> {
-    if (this.web3.eth.accounts.wallet.length > 0) {
-      console.log("Key address:", this.web3.eth.accounts.wallet[0].address);
-    }
     let addressType: AddressType = "universalProfile";
+    let upOwner: string;
     // let addressType: AddressType = "otherContactAccount";
     const code = await this.web3.eth.getCode(address);
     if (code === "0x") {
@@ -111,15 +109,18 @@ export default class LoginService {
           UniversalProfile.abi as any,
           address,
           {
+            from: address,
             gas: DEFAULT_GAS,
             gasPrice: DEFAULT_GAS_PRICE,
           }
         );
         const upOwner = await this.erc725Account.methods.owner().call();
+        console.log("upAddress:", address, "upOwner:", upOwner);
         this.keyManager = new this.web3.eth.Contract(
           KeyManager.abi as any,
           upOwner,
           {
+            from: address,
             gas: DEFAULT_GAS,
             gasPrice: DEFAULT_GAS_PRICE,
           }
@@ -136,6 +137,7 @@ export default class LoginService {
     const balance = parseFloat(this.web3.utils.fromWei(wei));
     this.profileStore.$patch((state) => {
       state.address = address;
+      state.keyManagerAddress = upOwner;
       state.isConnected = true;
       state.channel = channel;
       state.chainId = chainId;
@@ -181,6 +183,7 @@ export default class LoginService {
     });
 
     this.setupWeb3(this.provider as unknown as Provider);
+    console.log("setupProvider");
   }
 
   protected async enableProvider(): Promise<void> {
@@ -204,6 +207,7 @@ export default class LoginService {
 
   public async connectExtension(): Promise<void> {
     try {
+      console.log("connectExtension");
       this.setupWeb3(window.ethereum);
       let address = await this.accounts();
       if (!address) {
