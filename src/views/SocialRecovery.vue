@@ -9,13 +9,21 @@ const srStore = useSocialRecovery();
 const guardians = ref("");
 const guardiansThreshold = ref(0);
 const plainSecret = ref("");
-const oldPlainSecret = ref("");
 const isPending = ref(false);
 const isSRAbnormal = ref(false);
 const { socialRecoveryService } = useServices();
 
 const hasSocialRecovery = computed(() => {
   return profileStore.addressType === "universalProfile";
+});
+
+srStore.$subscribe(async (mutation, state) => {
+  if (state.guardians.length > 0 && !guardians.value) {
+    guardians.value = state.guardians.join(";");
+  }
+  if (state.guardiansThreshold > 0 && guardiansThreshold.value <= 0) {
+    guardiansThreshold.value = state.guardiansThreshold;
+  }
 });
 
 const createSRA = async () => {
@@ -33,11 +41,26 @@ const createSRA = async () => {
 };
 
 const editGuardians = async () => {
-  //todo
+  isPending.value = true;
+  try {
+    await socialRecoveryService.updateGuardians(
+      guardians.value.split(";"),
+      guardiansThreshold.value
+    );
+  } catch (error) {
+    console.log("updateGuardians err:", error);
+  }
+  isPending.value = false;
 };
 
 const editPassword = async () => {
-  //todo
+  isPending.value = true;
+  try {
+    await socialRecoveryService.updatePassword(plainSecret.value);
+  } catch (error) {
+    console.log("updatePassword err:", error);
+  }
+  isPending.value = false;
 };
 
 const fixSRA = async () => {
@@ -101,12 +124,6 @@ const fixSRA = async () => {
       <tab name="password" panel-class="panel-block">
         <div class="tile is-4 is-parent">
           <div class="tile is-child box">
-            <div class="field">
-              <label class="label">old password</label>
-              <div class="control">
-                <input v-model="oldPlainSecret" class="input" type="text" />
-              </div>
-            </div>
             <div class="field">
               <label class="label">new password</label>
               <div class="control">
