@@ -9,6 +9,7 @@ let isDestroy: boolean;
 async function initServices(): Promise<void> {
   if (!isInit) {
     await loginService.init();
+    await socialRecoveryService.init();
   }
   isInit = true;
 }
@@ -16,6 +17,7 @@ async function initServices(): Promise<void> {
 async function destroyServices(): Promise<void> {
   if (!isDestroy) {
     await loginService.destroy();
+    await socialRecoveryService.destroy();
   }
   isDestroy = true;
 }

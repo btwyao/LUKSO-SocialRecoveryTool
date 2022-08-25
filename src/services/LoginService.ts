@@ -15,11 +15,10 @@ import { EthereumProviderError } from "eth-rpc-errors";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
 export default class LoginService {
-  public profileStore;
-  public web3!: Web3;
+  protected profileStore;
   protected provider?: WalletConnectProvider;
-  public erc725Account?: Contract;
-  public keyManager?: Contract;
+  protected erc725Account?: Contract;
+  protected keyManager?: Contract;
   handleAccountsChanged: (accounts: string[]) => void;
   handleChainChanged: (chainId: string) => void;
   handleConnect: () => void;
@@ -80,16 +79,16 @@ export default class LoginService {
   }
 
   protected setupWeb3(provider: Provider): void {
-    this.web3 = new Web3(provider);
+    window.web3 = new Web3(provider);
   }
 
   protected async accounts(): Promise<string> {
-    const [account] = await this.web3.eth.getAccounts();
+    const [account] = await window.web3.eth.getAccounts();
     return account;
   }
 
   protected async requestAccounts(): Promise<string[]> {
-    const accountsRequest: string[] = await this.web3.eth.requestAccounts();
+    const accountsRequest: string[] = await window.web3.eth.requestAccounts();
     return accountsRequest;
   }
 
@@ -98,14 +97,14 @@ export default class LoginService {
     channel: Channel
   ): Promise<void> {
     let addressType: AddressType = "universalProfile";
-    let upOwner: string;
     // let addressType: AddressType = "otherContactAccount";
-    const code = await this.web3.eth.getCode(address);
+    let upOwner: string;
+    const code = await window.web3.eth.getCode(address);
     if (code === "0x") {
       addressType = "externallyOwnedAccounts";
     } else {
       try {
-        this.erc725Account = new this.web3.eth.Contract(
+        this.erc725Account = new window.web3.eth.Contract(
           UniversalProfile.abi as any,
           address,
           {
@@ -116,7 +115,7 @@ export default class LoginService {
         );
         const upOwner = await this.erc725Account.methods.owner().call();
         console.log("upAddress:", address, "upOwner:", upOwner);
-        this.keyManager = new this.web3.eth.Contract(
+        this.keyManager = new window.web3.eth.Contract(
           KeyManager.abi as any,
           upOwner,
           {
@@ -132,9 +131,9 @@ export default class LoginService {
     }
     console.log("connect address type:", addressType);
 
-    const chainId = await this.web3.eth.getChainId();
-    const wei = await this.web3.eth.getBalance(address);
-    const balance = parseFloat(this.web3.utils.fromWei(wei));
+    const chainId = await window.web3.eth.getChainId();
+    const wei = await window.web3.eth.getBalance(address);
+    const balance = parseFloat(window.web3.utils.fromWei(wei));
     this.profileStore.$patch((state) => {
       state.address = address;
       state.keyManagerAddress = upOwner;

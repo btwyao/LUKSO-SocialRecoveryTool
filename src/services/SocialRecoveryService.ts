@@ -1,5 +1,5 @@
 import { useSocialRecovery } from "@/stores/socialRecovery";
-import { useServices } from "@/services";
+import { useProfileStore, ProfileStore } from "@/stores/profile";
 import LSP11BasicSocialRecovery from "@lukso/lsp-smart-contracts/artifacts/contracts/LSP11BasicSocialRecovery/LSP11BasicSocialRecovery.sol/LSP11BasicSocialRecovery.json";
 import { DEFAULT_GAS, DEFAULT_GAS_PRICE } from "@/helpers/config";
 import Web3Utils from "web3-utils";
@@ -12,14 +12,25 @@ import {
 } from "@lukso/lsp-smart-contracts/constants.js";
 import { ERC725, ERC725JSONSchema } from "@erc725/erc725.js";
 import type { Permissions } from "@erc725/erc725.js/build/main/src/types/Method";
+import { Contract } from "web3-eth-contract";
+import UniversalProfile from "@lukso/lsp-smart-contracts/artifacts/contracts/UniversalProfile.sol/UniversalProfile.json";
 
 export default class SocialRecoveryService {
+  protected profileStore;
   protected socialRecoveryStore;
+  protected erc725Account?: Contract;
+  protected srAccount?: Contract;
+
   public constructor() {
+    this.profileStore = useProfileStore();
     this.socialRecoveryStore = useSocialRecovery();
   }
 
   public async init(): Promise<void> {
+    this.onProfileChanged(this.profileStore);
+    this.profileStore.$subscribe((mutation, state) => {
+      this.onProfileChanged(state);
+    });
     console.log("socialRecoveryService init finish");
   }
 
@@ -27,21 +38,52 @@ export default class SocialRecoveryService {
     console.log("socialRecoveryService destroy finish");
   }
 
+  protected isActive(): boolean {
+    if (
+      this.profileStore.isConnected &&
+      this.profileStore.addressType === "universalProfile"
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  protected onProfileChanged(state: ProfileStore): void {
+    if (this.isActive()) {
+      this.erc725Account = new window.web3.eth.Contract(
+        UniversalProfile.abi as any,
+        state.address,
+        {
+          from: state.address,
+          gas: DEFAULT_GAS,
+          gasPrice: DEFAULT_GAS_PRICE,
+        }
+      );
+    } else {
+      this.erc725Account = undefined;
+    }
+  }
+
   public async createSocialRecoveryAccount(
     guardians: Array<string>,
     guardiansThreshold: number,
     plainSecret: string
   ): Promise<void> {
-    const { loginService } = useServices();
-    if (!loginService.erc725Account) {
+    if (!this.isActive()) {
+      throw new Error("Social recovery is inactive!");
+    }
+    if (!this.erc725Account) {
       throw new Error("Not login yet!");
     }
-    const upAddress = loginService.profileStore.address;
-    const keyAddress = loginService.profileStore.keyManagerAddress;
+    if (this.srAccount) {
+      throw new Error("Already has social recovery account!");
+    }
+    const upAddress = this.profileStore.address;
+    const keyAddress = this.profileStore.keyManagerAddress;
     console.log(upAddress, keyAddress);
 
     // const srAddress = "0x54975192d7D43536C488bF05FacDaF564A92804f";
-    let srAccount = new loginService.web3.eth.Contract(
+    let srAccount = new window.web3.eth.Contract(
       LSP11BasicSocialRecovery.abi as any,
       // srAddress,
       undefined,
@@ -89,15 +131,14 @@ export default class SocialRecoveryService {
       SUPER_DELEGATECALL: false,
     };
     const value = ERC725.encodePermissions(permissions);
-    await loginService.erc725Account.methods["setData(bytes32,bytes)"](
-      key,
-      value
-    ).send({
-      from: upAddress,
-    });
-    const permissionRes = await loginService.erc725Account.methods[
-      "getData(bytes32)"
-    ](key).call();
+    await this.erc725Account.methods["setData(bytes32,bytes)"](key, value).send(
+      {
+        from: upAddress,
+      }
+    );
+    const permissionRes = await this.erc725Account.methods["getData(bytes32)"](
+      key
+    ).call();
     console.log(permissionRes);
     console.log(
       "social recovery account get permissions:",
@@ -122,10 +163,12 @@ export default class SocialRecoveryService {
     const curThreshold = await srAccount.methods.getGuardiansThreshold().call();
     console.log("set threshold:", curThreshold);
 
-    const secretHash = loginService.web3.utils.soliditySha3(plainSecret);
+    const secretHash = window.web3.utils.soliditySha3(plainSecret);
     await srAccount.methods.setSecret(secretHash).send({
       from: upAddress,
     });
     console.log("set secret hash:", secretHash);
+
+    this.srAccount = srAccount;
   }
 }

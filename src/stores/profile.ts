@@ -1,7 +1,7 @@
-import { Channel, AddressType } from "./../types.d";
+import { Channel, AddressType } from "@/types.d";
 import { defineStore } from "pinia";
 
-interface ProfileStore {
+export interface ProfileStore {
   isConnected: boolean;
   balance: number;
   channel: undefined | Channel;
