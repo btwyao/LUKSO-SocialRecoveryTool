@@ -1,32 +1,26 @@
 import { useSocialRecovery } from "@/stores/socialRecovery";
 import { useProfileStore, ProfileStore } from "@/stores/profile";
 import LSP11BasicSocialRecovery from "@lukso/lsp-smart-contracts/artifacts/contracts/LSP11BasicSocialRecovery/LSP11BasicSocialRecovery.sol/LSP11BasicSocialRecovery.json";
-import { DEFAULT_GAS, DEFAULT_GAS_PRICE } from "@/helpers/config";
+import {
+  DEFAULT_GAS,
+  DEFAULT_GAS_PRICE,
+  SocialRecoverySchema,
+} from "@/helpers/config";
 import { DeployOptions } from "web3-eth-contract";
 import {
   ERC725YKeys,
   // @ts-ignore
 } from "@lukso/lsp-smart-contracts/constants.js";
-import { ERC725, ERC725JSONSchema } from "@erc725/erc725.js";
+import { ERC725 } from "@erc725/erc725.js";
 import type { Permissions } from "@erc725/erc725.js/build/main/src/types/Method";
 import { Contract } from "web3-eth-contract";
 import UniversalProfile from "@lukso/lsp-smart-contracts/artifacts/contracts/UniversalProfile.sol/UniversalProfile.json";
-
-const SocialRecoverySchema: ERC725JSONSchema[] = [
-  {
-    name: "LSP11SocialRecovery",
-    key: "0xbbab553263be3bfcbf9acf680e56f3b4917c00946b141d9aee95317fd2f51484",
-    keyType: "Singleton",
-    valueContent: "Address",
-    valueType: "address",
-  },
-];
 
 export default class SocialRecoveryService {
   protected profileStore;
   protected socialRecoveryStore;
   protected erc725Account?: Contract;
-  protected srAccount?: Contract;
+  protected srAccount?: Contract; //social recovery account
 
   public constructor() {
     this.profileStore = useProfileStore();
@@ -108,6 +102,8 @@ export default class SocialRecoveryService {
       }
     } else {
       this.erc725Account = undefined;
+      this.srAccount = undefined;
+      this.socialRecoveryStore.$reset();
     }
   }
 

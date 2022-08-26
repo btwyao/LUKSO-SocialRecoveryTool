@@ -1,16 +1,27 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAccessBack } from "@/stores/accessBack";
+import { useServices } from "@/services";
 const accessBackStore = useAccessBack();
+const { accessBackService } = useServices();
 const step = ref(1);
 const isPending = ref(false);
+const upAddress = ref("");
+accessBackStore.$subscribe(async (mutation, state) => {
+  if (state.upAddress && !upAddress.value) {
+    upAddress.value = accessBackStore.upAddress;
+  }
+});
 
 //step 1
-const upAddress = ref("");
-upAddress.value = accessBackStore.upAddress;
-
 const enterUPAddress = async () => {
-  //todo
+  isPending.value = true;
+  try {
+    await accessBackService.setUPAddress(upAddress.value, false);
+  } catch (error) {
+    console.log("updatePassword err:", error);
+  }
+  isPending.value = false;
   step.value = 2;
 };
 
@@ -18,7 +29,13 @@ const enterUPAddress = async () => {
 const newRecoverProcessId = ref("");
 
 const createRecoverProcess = async () => {
-  //todo
+  isPending.value = true;
+  try {
+    await accessBackService.createRecoverProcess(newRecoverProcessId.value);
+  } catch (error) {
+    console.log("createRecoverProcess err:", error);
+  }
+  isPending.value = false;
 };
 
 const toRecoverOwnership = async (processId: string) => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { onBeforeMount, onUnmounted } from "vue";
 import { useServices } from "@/services";
 import Navbar from "./components/nav/Navbar.vue";
 import { useProfileStore } from "@/stores/profile";
@@ -19,7 +19,7 @@ profileStore.$subscribe((mutation, state) => {
   }
 });
 
-onMounted(async () => {
+onBeforeMount(async () => {
   await initServices();
 });
 

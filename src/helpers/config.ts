@@ -1,6 +1,9 @@
 import { NetworkInfo, NetworkType } from "@/interfaces/network";
+import { ERC725JSONSchema } from "@erc725/erc725.js";
 
 export const UP_CONNECTED_ADDRESS = "up-srt:connected-address";
+export const ACCESS_BACK_ADDRESS = "up-srt:access-back-address";
+export const ACCESS_BACK_PROCESS = "up-srt:access-back-process";
 
 export const DEFAULT_GAS = 5_000_000;
 export const DEFAULT_GAS_PRICE = "10000000000";
@@ -34,3 +37,13 @@ export const PRIVATE_KEY =
 export const DEFAULT_NETWORK_CONFIG = NETWORKS[DEFAULT_NETWORK];
 
 export const WALLET_CONNECT_VERSION = "1.0";
+
+export const SocialRecoverySchema: ERC725JSONSchema[] = [
+  {
+    name: "LSP11SocialRecovery",
+    key: "0xbbab553263be3bfcbf9acf680e56f3b4917c00946b141d9aee95317fd2f51484",
+    keyType: "Singleton",
+    valueContent: "Address",
+    valueType: "address",
+  },
+];

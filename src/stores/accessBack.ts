@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-interface RecoverProcess {
+export interface RecoverProcess {
   processId: string;
   guardiansVoted: Array<string>;
   grantAccessUrl: string;
