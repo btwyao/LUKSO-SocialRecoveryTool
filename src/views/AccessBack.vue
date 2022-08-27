@@ -17,7 +17,7 @@ accessBackStore.$subscribe(async (mutation, state) => {
 const enterUPAddress = async () => {
   isPending.value = true;
   try {
-    await accessBackService.setUPAddress(upAddress.value, false);
+    await accessBackService.setUPAddress(upAddress.value);
   } catch (error) {
     console.log("updatePassword err:", error);
   }
@@ -46,9 +46,20 @@ const toRecoverOwnership = async (processId: string) => {
 //step 3
 const recoverProcessId = ref("");
 const password = ref("");
+const newPassword = ref("");
 
 const recoverOwnership = async () => {
-  //todo
+  isPending.value = true;
+  try {
+    await accessBackService.recoverOwnership(
+      recoverProcessId.value,
+      password.value,
+      newPassword.value
+    );
+  } catch (error) {
+    console.log("recoverOwnership err:", error);
+  }
+  isPending.value = false;
 };
 </script>
 <template>
@@ -189,6 +200,12 @@ const recoverOwnership = async () => {
           <label class="label">password</label>
           <div class="control">
             <input v-model="password" class="input" type="text" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">new password</label>
+          <div class="control">
+            <input v-model="newPassword" class="input" type="text" />
           </div>
         </div>
         <div class="field">

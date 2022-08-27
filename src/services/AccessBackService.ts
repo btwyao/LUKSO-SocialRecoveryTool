@@ -25,18 +25,17 @@ export default class AccessBackService {
   }
 
   public async init(): Promise<void> {
-    const cacheAddress = localStorage.getItem(ACCESS_BACK_ADDRESS);
-    if (cacheAddress) {
-      await this.setUPAddress(cacheAddress, true);
-    }
+    await this.loadAccessBackAddress();
     this.profileStore.$subscribe(async (mutation, state) => {
       if (state.isConnected) {
+        await this.loadAccessBackAddress();
         if (this.acessBackStore.upAddress) {
-          await this.setUPAddress(this.acessBackStore.upAddress, true);
+          await this.innerSetAccessBackAddress(this.acessBackStore.upAddress);
         }
       } else {
         this.erc725Account = undefined;
         this.srAccount = undefined;
+        this.acessBackStore.$reset();
       }
     });
     console.log("AccessBackService init finish");
@@ -46,25 +45,14 @@ export default class AccessBackService {
     console.log("AccessBackService destroy finish");
   }
 
-  protected loadAccessBackProcess(): void {
+  protected async loadAccessBackAddress(): Promise<void> {
     try {
-      // localStorage.setItem(ACCESS_BACK_PROCESS, "");
-      const cacheProcess = localStorage.getItem(ACCESS_BACK_PROCESS);
-      if (cacheProcess) {
-        const processMap = JSON.parse(cacheProcess);
-        const cacheProcessList = processMap[
-          this.acessBackStore.upAddress
-        ] as Array<RecoverProcess>;
-        if (cacheProcessList) {
-          const processMap: any = {};
-          for (const process of cacheProcessList) {
-            processMap[process.processId] = process;
-          }
-          this.acessBackStore.recoverProcessList = Object.values(processMap);
-          console.log(
-            "loadAccessBackProcess",
-            this.acessBackStore.recoverProcessList
-          );
+      const cacheAddress = localStorage.getItem(ACCESS_BACK_ADDRESS);
+      if (cacheAddress) {
+        const addressMap = JSON.parse(cacheAddress);
+        const accessBackAddress = addressMap[this.profileStore.address];
+        if (accessBackAddress) {
+          await this.innerSetAccessBackAddress(accessBackAddress);
         }
       }
     } catch (error) {
@@ -72,69 +60,25 @@ export default class AccessBackService {
     }
   }
 
-  protected saveAccessBackProcess(): void {
-    let processMap: any = {};
+  protected saveAccessBackAddress(): void {
+    let addressMap: any = {};
     try {
-      const cacheProcess = localStorage.getItem(ACCESS_BACK_PROCESS);
-      if (cacheProcess) {
-        processMap = JSON.parse(cacheProcess);
+      const cacheAddress = localStorage.getItem(ACCESS_BACK_ADDRESS);
+      if (cacheAddress) {
+        addressMap = JSON.parse(cacheAddress);
       }
     } catch (error) {
       console.log(error);
     }
-    processMap[this.acessBackStore.upAddress] =
-      this.acessBackStore.recoverProcessList;
-    localStorage.setItem(ACCESS_BACK_PROCESS, JSON.stringify(processMap));
+    addressMap[this.profileStore.address] = this.acessBackStore.upAddress;
+    localStorage.setItem(ACCESS_BACK_ADDRESS, JSON.stringify(addressMap));
   }
 
-  protected async refreshAccessBackProcess(): Promise<void> {
-    if (!this.srAccount) {
-      return;
-    }
-    const newProcessList: Array<RecoverProcess> = [];
-    const processIds = (
-      (await this.srAccount.methods
-        .getRecoverProcessesIds()
-        .call()) as Array<string>
-    ).map((processId) => Web3.utils.hexToUtf8(processId));
-    console.log("getRecoverProcessesIds: ", processIds);
-    for (const processId of processIds) {
-      const guardiansVoted: Array<string> = [];
-      for (const guardianAddress of this.acessBackStore.guardianAddressList) {
-        const voteAddress = await this.srAccount.methods
-          .getGuardianVote(Web3.utils.utf8ToHex(processId), guardianAddress)
-          .call();
-        console.log(
-          "getGuardianVote: ",
-          processId,
-          guardianAddress,
-          voteAddress
-        );
-        if (this.profileStore.address === voteAddress) {
-          guardiansVoted.push(guardianAddress);
-        }
-      }
-      newProcessList.push({
-        processId,
-        guardiansVoted,
-        grantAccessUrl: this.genGrantAccessUrl(processId),
-      });
-    }
-    for (const process of this.acessBackStore.recoverProcessList) {
-      if (!processIds.includes(process.processId)) {
-        newProcessList.push(process);
-      }
-    }
-    this.acessBackStore.recoverProcessList = newProcessList;
-  }
-
-  public async setUPAddress(upAddress: string, force: boolean): Promise<void> {
+  protected async innerSetAccessBackAddress(upAddress: string): Promise<void> {
     if (!this.profileStore.isConnected) {
-      throw new Error("Not login yet!");
-    }
-    if (upAddress === this.acessBackStore.upAddress && !force) {
       return;
     }
+    console.log("innerSetAccessBackAddress:", upAddress);
     this.erc725Account = new window.web3.eth.Contract(
       UniversalProfile.abi as any,
       upAddress,
@@ -183,11 +127,107 @@ export default class AccessBackService {
       state.guardianAddressList = guardians;
       state.guardianThreshold = curThreshold;
     });
-    localStorage.setItem(ACCESS_BACK_ADDRESS, upAddress);
+    this.saveAccessBackAddress();
 
     this.loadAccessBackProcess();
     await this.refreshAccessBackProcess();
     this.saveAccessBackProcess();
+  }
+
+  protected loadAccessBackProcess(): void {
+    try {
+      // localStorage.setItem(ACCESS_BACK_PROCESS, "");
+      const cacheProcess = localStorage.getItem(ACCESS_BACK_PROCESS);
+      if (cacheProcess) {
+        const processMap = JSON.parse(cacheProcess);
+        const cacheProcessList = processMap[
+          this.acessBackStore.upAddress + "|" + this.profileStore.address
+        ] as Array<RecoverProcess>;
+        if (cacheProcessList) {
+          const processMap: any = {};
+          for (const process of cacheProcessList) {
+            processMap[process.processId] = process;
+          }
+          this.acessBackStore.recoverProcessList = Object.values(processMap);
+          console.log(
+            "loadAccessBackProcess",
+            this.acessBackStore.recoverProcessList
+          );
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  protected saveAccessBackProcess(): void {
+    let processMap: any = {};
+    try {
+      const cacheProcess = localStorage.getItem(ACCESS_BACK_PROCESS);
+      if (cacheProcess) {
+        processMap = JSON.parse(cacheProcess);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    processMap[
+      this.acessBackStore.upAddress + "|" + this.profileStore.address
+    ] = this.acessBackStore.recoverProcessList;
+    localStorage.setItem(ACCESS_BACK_PROCESS, JSON.stringify(processMap));
+  }
+
+  protected async refreshAccessBackProcess(): Promise<void> {
+    if (!this.srAccount) {
+      return;
+    }
+    const newProcessList: Array<RecoverProcess> = [];
+    const processIds = (
+      (await this.srAccount.methods
+        .getRecoverProcessesIds()
+        .call()) as Array<string>
+    ).map((processId) => Web3.utils.hexToUtf8(processId));
+    console.log("getRecoverProcessesIds: ", processIds);
+    for (const processId of processIds) {
+      const guardiansVoted: Array<string> = [];
+      for (const guardianAddress of this.acessBackStore.guardianAddressList) {
+        const voteAddress = await this.srAccount.methods
+          .getGuardianVote(Web3.utils.utf8ToHex(processId), guardianAddress)
+          .call();
+        console.log(
+          "getGuardianVote: ",
+          processId,
+          guardianAddress,
+          voteAddress
+        );
+        if (this.profileStore.address === voteAddress) {
+          guardiansVoted.push(guardianAddress);
+        }
+      }
+      newProcessList.push({
+        processId,
+        guardiansVoted,
+        grantAccessUrl: this.genGrantAccessUrl(processId),
+      });
+    }
+    for (const process of this.acessBackStore.recoverProcessList) {
+      if (
+        !processIds.includes(process.processId) &&
+        process.guardiansVoted.length <= 0
+      ) {
+        newProcessList.push(process);
+      }
+    }
+    this.acessBackStore.recoverProcessList = newProcessList;
+  }
+
+  public async setUPAddress(upAddress: string): Promise<void> {
+    if (!this.profileStore.isConnected) {
+      throw new Error("Not login yet!");
+    }
+    if (upAddress === this.acessBackStore.upAddress) {
+      return;
+    }
+    await this.innerSetAccessBackAddress(upAddress);
   }
 
   protected genGrantAccessUrl(processId: string): string {
@@ -214,6 +254,35 @@ export default class AccessBackService {
       guardiansVoted: [],
       grantAccessUrl: this.genGrantAccessUrl(processId),
     });
+    this.saveAccessBackProcess();
+  }
+
+  public async recoverOwnership(
+    recoverProcessId: string,
+    password: string,
+    newPassword: string
+  ): Promise<void> {
+    if (!this.profileStore.isConnected) {
+      throw new Error("Not login yet!");
+    }
+    if (!this.srAccount) {
+      throw new Error("Do not set universal profile account to get back yet!");
+    }
+    const secretHash = window.web3.utils.soliditySha3({
+      type: "string",
+      value: newPassword,
+    });
+    console.log("set new secret hash:", secretHash);
+    await this.srAccount.methods
+      .recoverOwnership(
+        Web3.utils.utf8ToHex(recoverProcessId),
+        password,
+        secretHash
+      )
+      .send();
+
+    this.acessBackStore.recoverProcessList = [];
+    await this.refreshAccessBackProcess();
     this.saveAccessBackProcess();
   }
 }

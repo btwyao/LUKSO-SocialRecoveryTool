@@ -154,27 +154,6 @@ export default class SocialRecoveryService {
       srLinkedAddress
     );
 
-    const encodedData = ERC725.encodeData(
-      [
-        {
-          keyName: "LSP11SocialRecovery",
-          value: srAddress,
-        },
-      ],
-      SocialRecoverySchema
-    );
-    await this.erc725Account.methods["setData(bytes32,bytes)"](
-      encodedData.keys[0],
-      encodedData.values[0]
-    ).send();
-    const srAddressRes = await this.erc725Account.methods["getData(bytes32)"](
-      encodedData.keys[0]
-    ).call();
-    console.log(
-      "set social recovery address in universal profile account:",
-      srAddressRes
-    );
-
     const key =
       ERC725YKeys["LSP6"]["AddressPermissions:Permissions"] +
       srAddress.slice(2);
@@ -207,6 +186,27 @@ export default class SocialRecoveryService {
     console.log(
       "social recovery account get permissions:",
       ERC725.decodePermissions(permissionRes)
+    );
+
+    const encodedData = ERC725.encodeData(
+      [
+        {
+          keyName: "LSP11SocialRecovery",
+          value: srAddress,
+        },
+      ],
+      SocialRecoverySchema
+    );
+    await this.erc725Account.methods["setData(bytes32,bytes)"](
+      encodedData.keys[0],
+      encodedData.values[0]
+    ).send();
+    const srAddressRes = await this.erc725Account.methods["getData(bytes32)"](
+      encodedData.keys[0]
+    ).call();
+    console.log(
+      "set social recovery address in universal profile account:",
+      srAddressRes
     );
 
     try {
@@ -268,7 +268,10 @@ export default class SocialRecoveryService {
       throw new Error("Do not have social recovery account!");
     }
 
-    const secretHash = window.web3.utils.soliditySha3(plainSecret);
+    const secretHash = window.web3.utils.soliditySha3({
+      type: "string",
+      value: plainSecret,
+    });
     await this.srAccount.methods.setSecret(secretHash).send();
     console.log("set secret hash:", secretHash);
   }
