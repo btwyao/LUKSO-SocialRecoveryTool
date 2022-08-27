@@ -4,11 +4,13 @@ import { useEnv } from "@/stores/env";
 import { useServices } from "@/services";
 import { WALLET_CONNECT_VERSION as walletConnectVersion } from "@/helpers/config";
 import { useRoute, useRouter } from "vue-router";
+import { ref } from "vue";
 const profileStore = useProfileStore();
 const envStore = useEnv();
 const { loginService } = useServices();
 const router = useRouter();
 const route = useRoute();
+const isPending = ref(false);
 
 profileStore.$subscribe((mutation, state) => {
   if (state.isConnected) {
@@ -18,7 +20,13 @@ profileStore.$subscribe((mutation, state) => {
 });
 
 const connectExtension = async () => {
-  await loginService.connectExtension();
+  isPending.value = true;
+  try {
+    await loginService.connectExtension();
+  } catch (error) {
+    console.log("connectExtension err:", error);
+  }
+  isPending.value = false;
 };
 
 const connectWalletConnect = async () => {
@@ -26,33 +34,38 @@ const connectWalletConnect = async () => {
 };
 </script>
 <template>
-  <div class="tile is-4 is-parent">
-    <div class="tile is-child box">
-      <div v-if="route.query.redirect" class="field">
-        <label class="label">You need login firstly</label>
-      </div>
-      <div class="field">
-        <button
-          class="button is-primary is-rounded mb-3"
-          :disabled="
-            profileStore.address || !envStore.hasExtension ? true : undefined
-          "
-          data-testid="connect-extension"
-          @click="connectExtension"
-        >
-          Browser Extension
-        </button>
-      </div>
-      <div class="field">
-        <button
-          class="button is-primary is-rounded mb-3"
-          :disabled="profileStore.address ? true : undefined"
-          data-testid="connect-wc"
-          @click="connectWalletConnect"
-        >
-          Wallet Connect {{ walletConnectVersion }}
-        </button>
+  <section class="section">
+    <div class="mb-6"></div>
+    <div class="columns">
+      <div class="column is-6 is-offset-3 box">
+        <div v-if="route.query.redirect" class="field">
+          <label class="title">You need login firstly:</label>
+        </div>
+        <div class="field column is-offset-4">
+          <button
+            :class="`button is-primary is-rounded mb-3 ${
+              isPending ? 'is-loading' : ''
+            }`"
+            :disabled="
+              profileStore.address || !envStore.hasExtension ? true : undefined
+            "
+            data-testid="connect-extension"
+            @click="connectExtension"
+          >
+            Browser Extension
+          </button>
+        </div>
+        <!-- <div class="field">
+          <button
+            class="button is-primary is-rounded mb-3"
+            :disabled="profileStore.address ? true : undefined"
+            data-testid="connect-wc"
+            @click="connectWalletConnect"
+          >
+            Wallet Connect {{ walletConnectVersion }}
+          </button>
+        </div> -->
       </div>
     </div>
-  </div>
+  </section>
 </template>
