@@ -11,6 +11,7 @@ import { Contract } from "web3-eth-contract";
 import UniversalProfile from "@lukso/lsp-smart-contracts/artifacts/contracts/UniversalProfile.sol/UniversalProfile.json";
 import { ERC725 } from "@erc725/erc725.js";
 import LSP11BasicSocialRecovery from "@lukso/lsp-smart-contracts/artifacts/contracts/LSP11BasicSocialRecovery/LSP11BasicSocialRecovery.sol/LSP11BasicSocialRecovery.json";
+import Web3 from "web3";
 
 export default class AccessBackService {
   protected profileStore;
@@ -47,6 +48,7 @@ export default class AccessBackService {
 
   protected loadAccessBackProcess(): void {
     try {
+      // localStorage.setItem(ACCESS_BACK_PROCESS, "");
       const cacheProcess = localStorage.getItem(ACCESS_BACK_PROCESS);
       if (cacheProcess) {
         const processMap = JSON.parse(cacheProcess);
@@ -54,7 +56,15 @@ export default class AccessBackService {
           this.acessBackStore.upAddress
         ] as Array<RecoverProcess>;
         if (cacheProcessList) {
-          this.acessBackStore.recoverProcessList = cacheProcessList;
+          const processMap: any = {};
+          for (const process of cacheProcessList) {
+            processMap[process.processId] = process;
+          }
+          this.acessBackStore.recoverProcessList = Object.values(processMap);
+          console.log(
+            "loadAccessBackProcess",
+            this.acessBackStore.recoverProcessList
+          );
         }
       }
     } catch (error) {
@@ -82,15 +92,23 @@ export default class AccessBackService {
       return;
     }
     const newProcessList: Array<RecoverProcess> = [];
-    const processIds = (await this.srAccount.methods
-      .getRecoverProcessesIds()
-      .call()) as Array<string>;
+    const processIds = (
+      (await this.srAccount.methods
+        .getRecoverProcessesIds()
+        .call()) as Array<string>
+    ).map((processId) => Web3.utils.hexToUtf8(processId));
+    console.log("getRecoverProcessesIds: ", processIds);
     for (const processId of processIds) {
       const guardiansVoted: Array<string> = [];
       for (const guardianAddress of this.acessBackStore.guardianAddressList) {
-        const voteAddress = await this.srAccount.methods.getGuardianVote(
+        const voteAddress = await this.srAccount.methods
+          .getGuardianVote(Web3.utils.utf8ToHex(processId), guardianAddress)
+          .call();
+        console.log(
+          "getGuardianVote: ",
           processId,
-          guardianAddress
+          guardianAddress,
+          voteAddress
         );
         if (this.profileStore.address === voteAddress) {
           guardiansVoted.push(guardianAddress);

@@ -6,7 +6,7 @@ const accessBackStore = useAccessBack();
 const { accessBackService } = useServices();
 const step = ref(1);
 const isPending = ref(false);
-const upAddress = ref("");
+const upAddress = ref(accessBackStore.upAddress);
 accessBackStore.$subscribe(async (mutation, state) => {
   if (state.upAddress && !upAddress.value) {
     upAddress.value = accessBackStore.upAddress;
@@ -39,7 +39,6 @@ const createRecoverProcess = async () => {
 };
 
 const toRecoverOwnership = async (processId: string) => {
-  //todo
   recoverProcessId.value = processId;
   step.value = 3;
 };

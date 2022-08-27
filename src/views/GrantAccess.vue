@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRoute } from "vue-router";
+import { useServices } from "@/services";
+const { grantAccessService } = useServices();
 const route = useRoute();
 const isPending = ref(false);
 const upAddress = ref("");
@@ -13,7 +15,13 @@ const vote = async (
   newOwnerAddress: string
 ) => {
   console.log("vote:", upAddress, recoverProcessId, newOwnerAddress);
-  //todo
+  isPending.value = true;
+  try {
+    await grantAccessService.vote(upAddress, recoverProcessId, newOwnerAddress);
+  } catch (error) {
+    console.log("vote err:", error);
+  }
+  isPending.value = false;
 };
 </script>
 <template>
