@@ -5,7 +5,7 @@ import { useEnv } from "@/stores/env";
 import { sliceAddress } from "@/utils/sliceAddress";
 import { useServices } from "@/services";
 import { close, toggle } from "@/utils/dropdown";
-import { WALLET_CONNECT_VERSION as walletConnectVersion } from "@/helpers/config";
+// import { WALLET_CONNECT_VERSION as walletConnectVersion } from "@/helpers/config";
 const profileStore = useProfileStore();
 const envStore = useEnv();
 const dropdown = ref();
@@ -20,10 +20,10 @@ const connectExtension = async () => {
   await loginService.connectExtension();
 };
 
-const connectWalletConnect = async () => {
-  close(dropdown.value);
-  await loginService.connectWalletConnect();
-};
+// const connectWalletConnect = async () => {
+//   close(dropdown.value);
+//   await loginService.connectWalletConnect();
+// };
 </script>
 
 <template>
@@ -97,14 +97,14 @@ const connectWalletConnect = async () => {
           <div class="logo browser-extension" />
           Browser Extension
         </button>
-        <button
+        <!-- <button
           class="dropdown-item has-text-weight-bold button is-text"
           data-testid="connect-wc"
           @click="connectWalletConnect"
         >
           <div class="logo wallet-connect" />
           Wallet Connect {{ walletConnectVersion }}
-        </button>
+        </button> -->
       </div>
     </div>
   </div>

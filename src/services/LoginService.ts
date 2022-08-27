@@ -52,7 +52,7 @@ export default class LoginService {
   public async init(): Promise<void> {
     const browserExtensionConnected =
       localStorage.getItem(UP_CONNECTED_ADDRESS);
-    await this.setupProvider();
+    // await this.setupProvider();
 
     if (this.provider?.wc.connected) {
       await this.enableProvider();
