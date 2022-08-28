@@ -32,18 +32,18 @@ const vote = async (
       route.query.newOwnerAddress
     "
   >
-    <div class="tile is-ancestor">
-      <div class="tile is-child box">
+    <div class="columns">
+      <div class="column is-8 is-offset-2 box">
         <div class="field">
-          <label class="label">Universal Profile address</label>
+          <label class="title">Universal Profile address:</label>
           <label class="label">{{ route.query.upAddress }}</label>
         </div>
         <div class="field">
-          <label class="label">Recover process id</label>
+          <label class="title">Recover process id:</label>
           <label class="label">{{ route.query.recoverProcessId }}</label>
         </div>
         <div class="field">
-          <label class="label">New owner address</label>
+          <label class="title">New owner address:</label>
           <label class="label">{{ route.query.newOwnerAddress }}</label>
         </div>
         <div class="field">
@@ -67,8 +67,8 @@ const vote = async (
     </div>
   </div>
   <div v-else>
-    <div class="tile is-ancestor">
-      <div class="tile is-child box">
+    <div class="columns">
+      <div class="column is-8 is-offset-2 box">
         <div class="field">
           <label class="label">Universal Profile address</label>
           <div class="control">

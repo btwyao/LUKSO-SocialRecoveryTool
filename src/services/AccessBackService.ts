@@ -173,7 +173,9 @@ export default class AccessBackService {
     processMap[
       this.acessBackStore.upAddress + "|" + this.profileStore.address
     ] = this.acessBackStore.recoverProcessList;
-    localStorage.setItem(ACCESS_BACK_PROCESS, JSON.stringify(processMap));
+    const cache = JSON.stringify(processMap);
+    localStorage.setItem(ACCESS_BACK_PROCESS, cache);
+    console.log("saveAccessBackProcess:", cache);
   }
 
   protected async refreshAccessBackProcess(): Promise<void> {

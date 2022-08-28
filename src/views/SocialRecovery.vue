@@ -197,19 +197,17 @@ const fixSRA = async () => {
               <input v-model="plainSecret" class="input" type="password" />
             </div>
           </div>
-          <div class="field level">
-            <div class="level-right">
-              <button
-                :class="`button level-item is-primary is-rounded mb-3 ${
-                  isPending ? 'is-loading' : ''
-                }`"
-                :disabled="!srStore.address ? undefined : true"
-                data-testid="createSRA"
-                @click="createSRA"
-              >
-                create social recovery account
-              </button>
-            </div>
+          <div class="field">
+            <button
+              :class="`button is-primary is-rounded mb-3 ${
+                isPending ? 'is-loading' : ''
+              }`"
+              :disabled="!srStore.address ? undefined : true"
+              data-testid="createSRA"
+              @click="createSRA"
+            >
+              create social recovery account
+            </button>
           </div>
         </div>
       </div>
