@@ -1,21 +1,19 @@
 <script setup lang="ts">
 import { useEnv } from "@/stores/env";
-import Notifications from "@/components/Notification.vue";
+import { useNotification } from "@/stores/notification";
 const envStore = useEnv();
+const notification = useNotification();
+if (!envStore.hasExtension) {
+  notification.setNotification(
+    "Please install Universal Profile browser extension.",
+    "warning",
+    true
+  );
+}
 </script>
 <template>
   <section class="section">
-    <div class="mb-6">
-      <Notifications
-        v-if="!envStore.hasExtension"
-        :notification="{
-          message: 'Please instal Universal Profile browser extension.',
-          type: 'warning',
-        }"
-        :hide-notification="true"
-        class="mb-4"
-      ></Notifications>
-    </div>
+    <div class="mb-6"></div>
     <div class="columns">
       <div class="column is-4 is-offset-4 box">
         <div class="field column is-offset-3">

@@ -4,10 +4,13 @@ import { useServices } from "@/services";
 import Navbar from "./components/nav/Navbar.vue";
 import { useProfileStore } from "@/stores/profile";
 import { useRoute, useRouter } from "vue-router";
+import Notifications from "@/components/Notification.vue";
+import { useNotification } from "@/stores/notification";
 const { initServices, destroyServices } = useServices();
 const profileStore = useProfileStore();
 const router = useRouter();
 const route = useRoute();
+const notification = useNotification();
 
 profileStore.$subscribe((mutation, state) => {
   if (route.path === "/" || route.path === "/login") {
@@ -30,7 +33,15 @@ onUnmounted(async () => {
 
 <template>
   <Navbar />
-
+  <div class="mb-6">
+    <Notifications
+      v-if="notification.hasNotification"
+      :notification="notification.notification"
+      :hide-notification="notification.hideNotification"
+      class="mb-4"
+      @hide="notification.clearNotification"
+    ></Notifications>
+  </div>
   <Suspense>
     <router-view></router-view>
   </Suspense>
