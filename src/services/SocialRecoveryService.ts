@@ -209,15 +209,27 @@ export default class SocialRecoveryService {
       srAddressRes
     );
 
-    try {
-      await this.updateGuardians(guardians, guardiansThreshold);
-      await this.updatePassword(plainSecret);
-    } catch (error) {
-      console.log("edit social recovery account err:", error);
+    const secretHash = window.web3.utils.soliditySha3({
+      type: "string",
+      value: plainSecret,
+    });
+    await srAccount.methods.setSecret(secretHash).send();
+    console.log("set secret hash:", secretHash);
+
+    for (const guardian of guardians) {
+      await srAccount.methods.addGuardian(guardian).send();
+      console.log("add guardian:", guardian);
     }
 
+    await srAccount.methods.setThreshold(guardiansThreshold).send();
+    console.log("set threshold:", guardiansThreshold);
+
     this.srAccount = srAccount;
-    this.socialRecoveryStore.address = srAddress;
+    this.socialRecoveryStore.$patch((state) => {
+      state.address = srAddress;
+      state.guardians = guardians;
+      state.guardiansThreshold = guardiansThreshold;
+    });
   }
 
   public async updateGuardians(

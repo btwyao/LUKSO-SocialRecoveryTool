@@ -47,6 +47,11 @@ const createSRA = async () => {
       guardiansThreshold.value,
       plainSecret.value
     );
+    plainSecret.value = "";
+    notification.setNotification(
+      "create social recovery account success.",
+      "primary"
+    );
   } catch (error: any) {
     console.log("createSRA err:", error);
     notification.setNotification(error.message);
