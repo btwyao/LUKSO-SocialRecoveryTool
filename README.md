@@ -2,8 +2,10 @@
 
 ## Dependency
 This tool depends on social recovery contract, it's in submodule lib/lsp-smart-contracts, you need:
+```
 git submodule init
 git submodule update
+```
 
 ## Project setup
 

@@ -103,6 +103,7 @@ export default class LoginService {
     if (code === "0x") {
       addressType = "externallyOwnedAccounts";
     } else {
+      // todo: need more code to get the address type.
       try {
         this.erc725Account = new window.web3.eth.Contract(
           UniversalProfile.abi as any,
