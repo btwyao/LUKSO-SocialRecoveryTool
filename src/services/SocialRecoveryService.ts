@@ -238,6 +238,12 @@ export default class SocialRecoveryService {
       .getGuardians()
       .call()) as Array<string>;
     console.log("old guardians:", oldGuardians);
+    for (const guardian of oldGuardians) {
+      if (!guardians.includes(guardian)) {
+        await this.srAccount.methods.removeGuardian(guardian).send();
+        console.log("remove guardian:", guardian);
+      }
+    }
     for (const guardian of guardians) {
       if (!oldGuardians.includes(guardian)) {
         await this.srAccount.methods.addGuardian(guardian).send();
@@ -245,11 +251,13 @@ export default class SocialRecoveryService {
       }
     }
 
-    await this.srAccount.methods.setThreshold(guardiansThreshold).send();
     const curThreshold = await this.srAccount.methods
       .getGuardiansThreshold()
       .call();
-    console.log("set threshold:", curThreshold);
+    if (parseInt(curThreshold) !== guardiansThreshold) {
+      await this.srAccount.methods.setThreshold(guardiansThreshold).send();
+      console.log("set threshold:", curThreshold, guardiansThreshold);
+    }
 
     this.socialRecoveryStore.$patch((state) => {
       state.guardians = guardians;

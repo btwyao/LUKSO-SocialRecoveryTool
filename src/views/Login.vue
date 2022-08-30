@@ -4,13 +4,19 @@ import { useEnv } from "@/stores/env";
 import { useServices } from "@/services";
 import { WALLET_CONNECT_VERSION as walletConnectVersion } from "@/helpers/config";
 import { useRoute, useRouter } from "vue-router";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { useNotification } from "@/stores/notification";
 const profileStore = useProfileStore();
 const envStore = useEnv();
 const { loginService } = useServices();
+const notification = useNotification();
 const router = useRouter();
 const route = useRoute();
 const isPending = ref(false);
+
+onMounted(() => {
+  notification.clearNotification();
+});
 
 profileStore.$subscribe((mutation, state) => {
   if (state.isConnected) {
@@ -23,8 +29,9 @@ const connectExtension = async () => {
   isPending.value = true;
   try {
     await loginService.connectExtension();
-  } catch (error) {
+  } catch (error: any) {
     console.log("connectExtension err:", error);
+    notification.setNotification(error.message);
   }
   isPending.value = false;
 };

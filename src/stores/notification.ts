@@ -20,7 +20,7 @@ export const useNotification = defineStore({
   actions: {
     setNotification(
       message: string,
-      type: NotificationType = "primary",
+      type: NotificationType = "warning",
       hideNotification = false
     ) {
       this.notification = { message, type };

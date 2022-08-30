@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useAccessBack } from "@/stores/accessBack";
 import { useServices } from "@/services";
 import { useNotification } from "@/stores/notification";
@@ -15,6 +15,10 @@ accessBackStore.$subscribe(async (mutation, state) => {
   }
 });
 
+onMounted(() => {
+  notification.clearNotification();
+});
+
 //step 1
 const enterUPAddress = async () => {
   isPending.value = true;
@@ -23,7 +27,7 @@ const enterUPAddress = async () => {
     step.value = 2;
   } catch (error: any) {
     console.log("updatePassword err:", error);
-    notification.setNotification(error.message, "warning");
+    notification.setNotification(error.message);
   }
   isPending.value = false;
 };
@@ -35,8 +39,10 @@ const createRecoverProcess = async () => {
   isPending.value = true;
   try {
     await accessBackService.createRecoverProcess(newRecoverProcessId.value);
-  } catch (error) {
+    notification.setNotification("create recover process success.", "primary");
+  } catch (error: any) {
     console.log("createRecoverProcess err:", error);
+    notification.setNotification(error.message);
   }
   isPending.value = false;
 };
@@ -59,9 +65,10 @@ const recoverOwnership = async () => {
       password.value,
       newPassword.value
     );
+    notification.setNotification("recover success.", "primary");
   } catch (error: any) {
     console.log("recoverOwnership err:", error);
-    notification.setNotification(error.message, "warning");
+    notification.setNotification(error.message);
   }
   isPending.value = false;
 };
@@ -128,15 +135,17 @@ const recoverOwnership = async () => {
 
           <div class="tile is-child box">
             <div class="field">
+              <label class="title">recover process info:</label>
+            </div>
+            <div class="field">
               <label class="label">guardians:</label>
-              <ul>
-                <li
-                  v-for="item in accessBackStore.guardianAddressList"
-                  :key="item"
-                >
-                  {{ item }}
-                </li>
-              </ul>
+              <div
+                v-for="item in accessBackStore.guardianAddressList"
+                :key="item"
+                class="control"
+              >
+                <input class="input" type="text" :value="item" disabled />
+              </div>
             </div>
             <div class="field">
               <label class="label"
@@ -211,13 +220,13 @@ const recoverOwnership = async () => {
           <div class="field">
             <label class="label">password</label>
             <div class="control">
-              <input v-model="password" class="input" type="text" />
+              <input v-model="password" class="input" type="password" />
             </div>
           </div>
           <div class="field">
             <label class="label">new password</label>
             <div class="control">
-              <input v-model="newPassword" class="input" type="text" />
+              <input v-model="newPassword" class="input" type="password" />
             </div>
           </div>
           <div class="field">

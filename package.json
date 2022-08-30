@@ -41,7 +41,6 @@
     "stylelint-scss": "4.1.0",
     "vue": "3.2.23",
     "vue-router": "4.0.8",
-    "vue3-tabs-component": "^1.1.0",
     "web3": "^1.6.0"
   },
   "devDependencies": {
