@@ -1,5 +1,7 @@
 # universalprofile-social-recovery-tool
 
+## [Demo Video](https://www.youtube.com/watch?v=yEDvm_-IWDU)
+
 ## Dependency
 This tool depends on social recovery contract, it's in submodule lib/lsp-smart-contracts, you need:
 ```
@@ -7,7 +9,12 @@ git submodule init
 git submodule update
 ```
 
-## Data flow
+## Architecture
+
+### use case
+![](./res/use-case.jpg)
+
+### data flow
 ![](./res/data-flow.jpg)
 
 ## Project setup
@@ -28,24 +35,6 @@ npm run serve
 npm run build
 ```
 
-### Run your unit tests
+## Contact
 
-```
-npm run test:unit
-```
-
-### Run your end-to-end tests
-
-```
-npm run test:e2e
-```
-
-### Lints and fixes files
-
-```
-npm run lint
-```
-
-### Customize configuration
-
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- Wei Yao <btwyao@foxmail.com>
