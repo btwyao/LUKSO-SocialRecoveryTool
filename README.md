@@ -3,10 +3,12 @@
 ## [Demo Video](https://www.youtube.com/watch?v=yEDvm_-IWDU)
 
 ## Dependency
-This tool depends on social recovery contract, it's in submodule lib/lsp-smart-contracts, you need:
+This tool depends on social recovery contract, it's in submodule lib/lsp-smart-contracts, you need(hardhat needed firstly):
 ```
 git submodule init
 git submodule update
+cd lib/lsp-smart-contracts
+npm build
 ```
 
 ## Architecture
