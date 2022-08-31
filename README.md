@@ -12,7 +12,7 @@ git submodule update
 ## Architecture
 
 ### use case
-![](./res/use-case.jpg)
+![](./res/use-case.png)
 
 ### data flow
 ![](./res/data-flow.jpg)
