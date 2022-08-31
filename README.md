@@ -7,6 +7,9 @@ git submodule init
 git submodule update
 ```
 
+## Data flow
+![](./res/data-flow.jpg)
+
 ## Project setup
 
 ```
